@@ -1,227 +1,123 @@
 import { useState } from "react";
-
-import { ArrowUpRight, Check, Copy } from "lucide-react";
-
-import { Badge } from "@/components/ui/badge";
+import { Leaf } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
-/** Copy-and-paste starter prompts for Kiro's chat. */
-const PROMPTS = [
-  "What is humorphism? Show me a few patterns I could build.",
-  "What's already in this project that I can build with?",
-  "What do you already know about this workshop?",
-  "I do ___ at work. Suggest a humorphic pattern and build a first version.",
-  "Build the 'Just Need Your Input' pattern for ___.",
-  "Replace this landing page with a chat screen that uses the mock data.",
+import PlantGallery from "@/pages/PlantGallery";
+import FloraChat from "@/pages/FloraChat";
+import MyPlants from "@/pages/MyPlants";
+import PlantFinder from "@/pages/PlantFinder";
+
+export type Page = "gallery" | "my-plants" | "chat" | "finder";
+
+const NAV: { id: Page; label: string; emoji: string; desc: string }[] = [
+  { id: "gallery",    label: "Plants",        emoji: "🌿", desc: "Browse plant gallery" },
+  { id: "finder",     label: "Plant Finder",  emoji: "🔍", desc: "Find your perfect plant" },
+  { id: "my-plants",  label: "My Collection", emoji: "🪴", desc: "Track your plants" },
+  { id: "chat",       label: "Flora AI",      emoji: "🤖", desc: "Chat with plant AI" },
 ];
 
-/**
- * Fuego Fridays — starter landing / launch pad.
- *
- * This is intentionally NOT a demo of humorphism. When the app boots, the goal
- * of this screen is simple: confirm the environment works, show what's in the
- * box to build with, and push you into Kiro to start. Pick a pattern from
- * humorphism.com, pick your own work domain, and build it here.
- *
- * The shadcn/ui components (including the chat kit) live in src/components/ui
- * ready to import. Mock data is in src/data. Replace this screen with your build.
- */
+const pageVariants = {
+  initial: { opacity: 0, y: 16 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.28, ease: [0.22, 1, 0.36, 1] } },
+  exit:    { opacity: 0, y: -8, transition: { duration: 0.18 } },
+};
 
 export default function App() {
+  const [page, setPage] = useState<Page>("gallery");
+
   return (
-    <div className="flex min-h-dvh flex-col bg-background text-foreground">
-      {/* Masthead — full-bleed, pinned to the window edges */}
-      <header className="border-b border-border/60">
-        <div className="mx-auto grid w-full max-w-7xl grid-cols-3 items-center px-6 py-5 sm:px-8">
-          <div className="flex items-center gap-3 justify-self-start">
-            <span className="font-display text-lg font-semibold tracking-tight sm:text-xl">
-              Fuego Fridays
-            </span>
-            <Badge
-              variant="outline"
-              className="rounded-full border-border text-[10px] font-medium uppercase tracking-wider text-muted-foreground"
-            >
-              starter
-            </Badge>
-          </div>
-          <span className="hidden items-center gap-1.5 justify-self-center whitespace-nowrap rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-muted-foreground md:inline-flex">
-            <Check className="h-3.5 w-3.5 text-fuego-500" />
-            You&rsquo;re live &middot; localhost is running
-          </span>
-          <a
-            href="https://humorphism.com"
-            target="_blank"
-            rel="noreferrer"
-            className="justify-self-end text-sm text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+    <div className="flex min-h-dvh flex-col bg-[#f7f9f5] text-foreground">
+      {/* Skip to content */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-xl focus:bg-emerald-600 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white focus:shadow-lg"
+      >
+        Skip to main content
+      </a>
+
+      {/* Header */}
+      <header className="sticky top-0 z-40 border-b border-border/50 bg-white/95 backdrop-blur-md shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
+          {/* Logo */}
+          <motion.div
+            className="flex items-center gap-2.5"
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.4 }}
           >
-            humorphism.com
-          </a>
+            <div className="relative flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-sm">
+              <Leaf className="size-4.5 text-white" />
+              <span className="absolute -right-0.5 -top-0.5 size-2.5 rounded-full border-2 border-white bg-emerald-400" aria-hidden="true" />
+            </div>
+            <div className="leading-tight">
+              <span className="font-display text-base font-bold tracking-tight text-foreground">Plantopia</span>
+              <span className="ml-2 rounded-full bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-emerald-600">
+                AI
+              </span>
+            </div>
+          </motion.div>
+
+          {/* Nav */}
+          <nav className="flex items-center gap-0.5" aria-label="Main navigation" role="navigation">
+            {NAV.map((n, i) => (
+              <motion.button
+                key={n.id}
+                onClick={() => setPage(n.id)}
+                aria-current={page === n.id ? "page" : undefined}
+                aria-label={n.desc}
+                title={n.desc}
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.06, duration: 0.3 }}
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.96 }}
+                className={cn(
+                  "relative flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2",
+                  page === n.id
+                    ? "bg-emerald-600 text-white shadow-sm"
+                    : "text-muted-foreground hover:bg-emerald-50 hover:text-emerald-700"
+                )}
+              >
+                <span aria-hidden="true" className="text-base leading-none">{n.emoji}</span>
+                <span className="hidden sm:inline">{n.label}</span>
+                {page === n.id && (
+                  <motion.span
+                    layoutId="nav-indicator"
+                    className="absolute inset-0 rounded-xl bg-emerald-600 -z-10"
+                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                  />
+                )}
+              </motion.button>
+            ))}
+          </nav>
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-7xl flex-1 px-6 pb-24 sm:px-8">
-        {/* Hero — full-width rounded white panel */}
-        <section className="mt-8 w-full rounded-3xl border border-border/60 bg-card p-8 shadow-sm sm:mt-12 sm:p-12 lg:p-16">
-          <h1 className="max-w-4xl font-display text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
-            Build a front-end for an AI teammate.
-          </h1>
-
-          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-foreground sm:text-xl">
-            Pick one humorphic pattern. Build it into an experience that&rsquo;s
-            relevant to you, personally or at work.
-          </p>
-
-          <div className="mt-7 flex flex-wrap gap-3">
-            <a
-              href="https://humorphism.com/foundations/notice"
-              target="_blank"
-              rel="noreferrer"
-              className={cn(
-                "bg-thermal inline-flex items-center gap-1.5 rounded-md px-4 py-2.5",
-                "text-sm font-bold text-white shadow-sm",
-                "transition-all hover:-translate-y-0.5 hover:brightness-105",
-              )}
-            >
-              Browse humorphic patterns
-              <ArrowUpRight className="h-4 w-4" />
-            </a>
-            <span className="inline-flex items-center rounded-md border border-border px-4 py-2.5 text-sm text-muted-foreground">
-              The pattern is the constraint. The domain is yours.
-            </span>
-          </div>
-        </section>
-
-        {/* Start with Kiro — the page's one job: get you into the chat.
-            Horizontal padding matches the hero card so this content aligns
-            with the hero text above. */}
-        <section className="mt-20 px-8 sm:px-12 lg:px-16">
-          <SectionLabel>Start with Kiro</SectionLabel>
-          <p className="mt-4 text-lg leading-relaxed text-foreground sm:text-xl">
-            In your Kiro IDE, everything you need to start building is already
-            set up. This page, the localhost preview you&rsquo;re looking at now,
-            is what you&rsquo;ll change, and Kiro can help you do it. Open
-            Kiro&rsquo;s chat (<Kbd>⌘</Kbd>
-            <Kbd>L</Kbd> on Mac, <Kbd>Ctrl</Kbd>
-            <Kbd>L</Kbd> on Windows), tap a prompt to copy it, and paste it in.
-          </p>
-
-          <div className="mt-14">
-            <PromptGroup
-              label="Suggested prompts to get started"
-              prompts={PROMPTS}
-            />
-          </div>
-        </section>
-
-        {/* Vision tip */}
-        <section className="mt-10 px-8 sm:px-12 lg:px-16">
-          <div className="rounded-lg border border-fuego-500/25 bg-fuego-500/[0.05] p-5">
-            <p className="font-display text-lg font-semibold">
-              Show Kiro what you mean. Give it your eyes
-            </p>
-            <p className="mt-2 text-base leading-relaxed text-muted-foreground">
-              Kiro&rsquo;s chat accepts images, so you can show it instead of
-              describing it. Paste or drag in a screenshot and say &ldquo;build
-              this.&rdquo; It works just as well for changes: screenshot what
-              Kiro builds on your localhost, point out what&rsquo;s off, and tell
-              it what to fix. A picture is faster than words for a UI.
-            </p>
-          </div>
-        </section>
-
+      {/* Page content with animated transitions */}
+      <main className="flex-1" id="main-content" tabIndex={-1}>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={page}
+            variants={pageVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+          >
+            {page === "gallery"   && <PlantGallery onNavigate={setPage} />}
+            {page === "finder"    && <PlantFinder />}
+            {page === "my-plants" && <MyPlants />}
+            {page === "chat"      && <FloraChat />}
+          </motion.div>
+        </AnimatePresence>
       </main>
 
-      {/* Footer — full-bleed, pinned to the bottom edge */}
-      <footer className="mt-16 border-t border-border/60">
-        <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-2 px-6 py-6 text-xs text-muted-foreground sm:px-8">
-          <span>React 19 · TypeScript · Vite · Tailwind · shadcn/ui</span>
-          <span>No backend. Mock everything. The UX is the deliverable.</span>
+      <footer className="border-t border-border/50 bg-white px-6 py-4">
+        <div className="mx-auto flex max-w-6xl items-center justify-between">
+          <p className="text-[11px] text-muted-foreground">© 2026 Plantopia · AI-powered plant care</p>
+          <p className="text-[11px] text-muted-foreground">All data is simulated · No backend</p>
         </div>
       </footer>
     </div>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <h2 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-      {children}
-    </h2>
-  );
-}
-
-function PromptGroup({
-  label,
-  prompts,
-}: {
-  label: string;
-  prompts: string[];
-}) {
-  return (
-    <div>
-      <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-        {label}
-      </h3>
-      <ul className="mt-3 divide-y divide-border border-y border-border">
-        {prompts.map((prompt) => (
-          <PromptRow key={prompt} text={prompt} />
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-/** A single tappable prompt row that copies its text to the clipboard. */
-function PromptRow({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false);
-
-  async function handleCopy() {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1600);
-    } catch {
-      // Clipboard access can be blocked; fail quietly.
-    }
-  }
-
-  return (
-    <li>
-      <button
-        type="button"
-        onClick={handleCopy}
-        className="group flex w-full items-center justify-between gap-4 py-3.5 text-left"
-        aria-label={`Copy prompt: ${text}`}
-      >
-        <span className="text-lg leading-relaxed text-foreground sm:text-xl">
-          {text}
-        </span>
-        <span
-          className={cn(
-            "flex shrink-0 items-center gap-1.5 text-xs font-medium transition-colors",
-            copied
-              ? "text-fuego-600"
-              : "text-muted-foreground group-hover:text-foreground",
-          )}
-        >
-          {copied ? (
-            <Check className="h-3.5 w-3.5" />
-          ) : (
-            <Copy className="h-3.5 w-3.5" />
-          )}
-          {copied ? "Copied" : "Copy"}
-        </span>
-      </button>
-    </li>
-  );
-}
-
-function Kbd({ children }: { children: React.ReactNode }) {
-  return (
-    <kbd className="mx-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded border border-border bg-secondary px-1 font-sans text-[11px] font-medium text-muted-foreground">
-      {children}
-    </kbd>
   );
 }
